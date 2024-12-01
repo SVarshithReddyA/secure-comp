@@ -375,6 +375,8 @@ public class AppServlet extends HttpServlet {
   private static final String CONNECTION_URL = "jdbc:sqlite:db.sqlite3";
   private static final String LOG_FILE_PATH = "inputs.log";
 
+  private final RateLimiter rateLimiter = new RateLimiter();
+
   private final Configuration fm = new Configuration(Configuration.VERSION_2_3_28);
   private Connection database;
 
@@ -404,7 +406,7 @@ public class AppServlet extends HttpServlet {
     }
   }
 
-  private void logInput(HttpServletRequest request, String username, String surname, boolean authSuccess) {
+  private void logInput(HttpServletRequest request, String username, String surname, String authStatus) {
     try (PrintWriter logWriter = new PrintWriter(new FileWriter(LOG_FILE_PATH, true))) {
       LocalDateTime now = LocalDateTime.now();
       DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
@@ -412,14 +414,14 @@ public class AppServlet extends HttpServlet {
 
       String method = request.getMethod();
       String requestUrl = request.getRequestURL().toString();
-      String authStatus = authSuccess ? "Authentication Success" : "Authentication Failed";
-      logWriter.println(String.format("%s - Method: %s, Request URL: %s, Username: %s, Surname: %s, %s",
-                                      timestamp,
-                                      method,
-                                      requestUrl,
-                                      username != null ? username : "N/A",
-                                      surname != null ? surname : "N/A",
-                                      authStatus));
+//      String authStatus = authSuccess ? "Authentication Success" : "Authentication Failed";
+      logWriter.println(String.format("%s - Method: %s, Request URL: %s, Username: %s, Surname: %s, Status: %s",
+              timestamp,
+              method,
+              requestUrl,
+              username != null ? username : "N/A",
+              surname != null ? surname : "N/A",
+              authStatus));
     } catch (IOException e) {
       System.err.println("Failed to log input: " + e.getMessage());
     }
@@ -445,6 +447,18 @@ public class AppServlet extends HttpServlet {
     String password = request.getParameter("password");
     String surname = request.getParameter("surname");
 
+    String authStatus;
+
+    /*
+        check if user is allowed to perform a login action(db query)
+     */
+    if (!rateLimiter.isAllowed(username)) {
+      authStatus = "Rate Limited";
+      logInput(request, username, surname, authStatus);
+      response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Too many login attempts. Please try again later.");
+      return;
+    }
+
     boolean authSuccess = false;
     try {
       authSuccess = authenticated(username, password);
@@ -454,7 +468,13 @@ public class AppServlet extends HttpServlet {
       return;
     }
 
-    logInput(request, username, surname, authSuccess);
+    // reset rate limiter upon successful login
+    if (authSuccess) {
+      rateLimiter.reset(username);
+    }
+    authStatus = authSuccess ? "Authentication Success" : "Authentication Failed";
+    // log status
+    logInput(request, username, surname, authStatus);
 
     try {
       if (authSuccess) {

@@ -1,26 +1,6 @@
-2024-11-30 14:39:24 - Username: ' OR 1=1 --, Surname: ' OR 1=1 --
-2024-11-30 14:39:57 - Username: nde, Surname: Davison
-2024-11-30 14:42:04 - Username: ' OR 1=1 --, Surname: ' OR 1=1 --
-2024-11-30 14:45:14 - Username: ' OR 1=1 --, Surname: ' OR 1=1 --, Authentication Success: false
-2024-11-30 14:46:47 - Method: POST, Request URL: http://localhost:8080/login, Username: ' OR 1=1 --, Surname: ' OR 1=1 --
-2024-11-30 14:50:08 - Method: POST, Request URL: http://localhost:8080/login, Username: ' OR 1=1 --, Surname: ' OR 1=1 --, Auth Success: true
-2024-11-30 14:59:30 - Method: POST, Request URL: http://localhost:8080/login, Username: ' OR 1=1 --, Surname: ' OR 1=1 --
-2024-11-30 15:01:21 - Method: POST, Request URL: http://localhost:8080/login, Username: ' OR 1=1 --, Surname: ' OR 1=1 --, Authentication Success
-2024-11-30 15:04:19 - Method: POST, Request URL: http://localhost:8080/login, Username: ' OR 1=1 --, Surname: ' OR 1=1 --, Authentication Failed
-2024-11-30 15:26:36 - Method: POST, Request URL: http://localhost:8080/login, Username: ' OR 1=1 --, Surname: ' OR 1=1 --, Authentication Failed
-2024-11-30 16:54:20 - Method: POST, Request URL: http://localhost:8080/login, Username: ' OR 1=1 --, Surname: ' OR 1=1 --, Authentication Success
-2024-11-30 16:55:07 - Method: POST, Request URL: http://localhost:8080/login, Username: ' OR 1=1 --, Surname: ' OR 1=1 --, Authentication Failed
-2024-11-30 17:03:09 - Method: POST, Request URL: http://localhost:8080/, Username: <script>alert('XSS');</script>, Surname: , Authentication Failed
-2024-11-30 17:06:20 - Method: POST, Request URL: http://localhost:8080/login, Username: ' OR 1=1 --, Surname: ' OR 1=1 --, Authentication Success
-2024-11-30 17:06:25 - Method: POST, Request URL: http://localhost:8080/, Username: nde, Surname: Davison, Authentication Success
-2024-11-30 17:10:12 - Method: POST, Request URL: http://localhost:8080/login, Username: ' OR 1=1 --, Surname: ' OR 1=1 --, Authentication Failed
-2024-11-30 17:10:25 - Method: POST, Request URL: http://localhost:8080/, Username: nde, Surname: , Authentication Failed
-2024-11-30 17:10:37 - Method: POST, Request URL: http://localhost:8080/, Username: nde, Surname: Davison, Authentication Success
-2024-11-30 17:11:24 - Method: POST, Request URL: http://localhost:8080/login, Username: ' OR 1=1 --, Surname: ' OR 1=1 --, Authentication Failed
-2024-11-30 17:12:06 - Method: POST, Request URL: http://localhost:8080/, Username: mjone, Surname: Davison, Authentication Failed
-2024-11-30 17:12:46 - Method: POST, Request URL: http://localhost:8080/, Username: mjone, Surname: Davison, Authentication Failed
-2024-11-30 17:12:50 - Method: POST, Request URL: http://localhost:8080/, Username: mjones, Surname: Davison, Authentication Success
-2024-11-30 17:22:53 - Method: POST, Request URL: http://localhost:8080/login, Username: ' OR 1=1 --, Surname: ' OR 1=1 --, Authentication Success
-2024-11-30 17:23:56 - Method: POST, Request URL: http://localhost:8080/login, Username: ' OR 1=1 --, Surname: ' OR 1=1 --, Authentication Failed
-2024-11-30 17:55:38 - Method: POST, Request URL: http://localhost:8080/, Username: nde, Surname: Davison, Authentication Failed
-2024-11-30 18:10:01 - Method: POST, Request URL: http://localhost:8080/, Username: mjones, Surname: Davison, Authentication Success
+
+2024-12-01 17:55:17 - Method: POST, Request URL: http://localhost:8080/, Username: nde, Surname: Davison, Status: Authentication Failed
+2024-12-01 17:55:27 - Method: POST, Request URL: http://localhost:8080/, Username: nde, Surname: Davison, Status: Authentication Success
+2024-12-01 17:55:36 - Method: POST, Request URL: http://localhost:8080/, Username: nde, Surname: 123456, Status: Authentication Failed
+2024-12-01 17:55:48 - Method: POST, Request URL: http://localhost:8080/, Username: nde, Surname: 123456, Status: Authentication Failed
+2024-12-01 17:55:57 - Method: POST, Request URL: http://localhost:8080/, Username: nde, Surname: Davison, Status: Rate Limited

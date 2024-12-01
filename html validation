@@ -1,0 +1,78 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+    <title>Patient Records System</title>
+  </head>
+  <body>
+    <div class="container">
+      <h1 class="mt-2 mb-4">Patient Records System</h1>
+
+      <!-- Highlighted: Added 'onsubmit' attribute to perform client-side sanitization -->
+      <form action="" method="POST" onsubmit="return sanitizeInput();">
+        <div class="row">
+          <div class="col-4">
+            <div class="form-group">
+              <label for="uid">Your User ID</label>
+              <!-- Highlighted: Added 'pattern' attribute for basic validation -->
+              <input id="uid" type="text" class="form-control" name="username" pattern="[a-zA-Z0-9]{1,20}" required>
+            </div>
+          </div>
+        </div>
+        <div class="row">
+          <div class="col-4">
+            <div class="form-group">
+              <label for="pwd">Your Password</label>
+              <!-- Highlighted: Added 'pattern' attribute -->
+              <input id="pwd" type="password" class="form-control" name="password" pattern=".{6,}" required>
+            </div>
+          </div>
+        </div>
+        <div class="row">
+          <div class="col-4">
+            <div class="form-group">
+              <label for="sn">Patient Surname</label>
+              <!-- Highlighted: Added 'pattern' attribute -->
+              <input id="sn" type="text" class="form-control" name="surname" pattern="[a-zA-Z]{1,50}" required>
+           </div>
+          </div>
+        </div>
+        <button type="submit" class="mt-2 btn btn-primary">Search</button>
+      </form>
+    </div>
+
+    <!-- Highlighted: Added sanitization script -->
+    <script>
+      function sanitizeInput() {
+        const username = document.getElementById('uid').value.trim();
+        const password = document.getElementById('pwd').value.trim();
+        const surname = document.getElementById('sn').value.trim();
+
+        // Perform basic sanitization by removing potentially harmful characters
+        const sanitizedUsername = username.replace(/[^a-zA-Z0-9]/g, '');
+        const sanitizedSurname = surname.replace(/[^a-zA-Z]/g, '');
+
+        // If sanitized input differs from original, alert the user
+        if (username !== sanitizedUsername) {
+          alert("User ID contains invalid characters. Please use only alphanumeric characters.");
+          return false;
+        }
+        if (surname !== sanitizedSurname) {
+          alert("Surname contains invalid characters. Please use only letters.");
+          return false;
+        }
+        if (password.length < 6) {
+          alert("Password must be at least 6 characters long.");
+          return false;
+        }
+        return true; // Allow form submission if all checks pass
+      }
+    </script>
+
+    <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
+  </body>
+</html>

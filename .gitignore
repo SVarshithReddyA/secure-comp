@@ -1,0 +1,48 @@
+# Gradle-specific files
+.gradle/
+build/
+!gradle/wrapper/gradle-wrapper.jar
+.gradle/
+!gradle-wrapper.properties
+
+# IDEA files
+.idea/
+*.iml
+
+# Eclipse files
+.project
+.classpath
+.settings/
+bin/
+
+# VS Code files
+.vscode/
+
+# OS-specific files
+.DS_Store
+Thumbs.db
+
+# Logs and temporary files
+*.log
+*.tmp
+
+# Java-specific files
+*.class
+*.jar
+*.war
+*.ear
+
+# Maven / Gradle artifact caches
+.m2/
+.gradle/
+
+# IntelliJ IDEA module files
+*.iws
+*.ipr
+*.iml
+
+# Environment settings
+.env
+
+# Dependency directories
+node_modules/

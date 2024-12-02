@@ -342,6 +342,7 @@
 package comp3911.cwk2;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -358,6 +359,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
@@ -372,8 +374,12 @@ import freemarker.template.TemplateExceptionHandler;
 @SuppressWarnings("serial")
 public class AppServlet extends HttpServlet {
 
-  private static final String CONNECTION_URL = "jdbc:sqlite:db.sqlite3";
-  private static final String LOG_FILE_PATH = "inputs.log";
+  private String connectionUrl;
+  private String logFilePath;
+  private String queryUserPassword;
+  private String queryPatientGpId;
+  private String queryUserId;
+  private String queryPatientDetails;
 
   private final RateLimiter rateLimiter = new RateLimiter();
 
@@ -382,8 +388,24 @@ public class AppServlet extends HttpServlet {
 
   @Override
   public void init() throws ServletException {
+    loadEnvVariables();
     configureTemplateEngine();
     connectToDatabase();
+  }
+
+  private void loadEnvVariables() throws ServletException {
+    Properties env = new Properties();
+    try (FileInputStream fis = new FileInputStream(".env")) {
+      env.load(fis);
+      connectionUrl = env.getProperty("DB_CONNECTION_URL");
+      logFilePath = env.getProperty("DB_LOG_FILE_PATH");
+      queryUserPassword = env.getProperty("QUERY_USER_PASSWORD");
+      queryPatientGpId = env.getProperty("QUERY_PATIENT_GP_ID");
+      queryUserId = env.getProperty("QUERY_USER_ID");
+      queryPatientDetails = env.getProperty("QUERY_PATIENT_DETAILS");
+    } catch (IOException e) {
+      throw new ServletException("Failed to load environment variables", e);
+    }
   }
 
   private void configureTemplateEngine() throws ServletException {
@@ -400,21 +422,20 @@ public class AppServlet extends HttpServlet {
 
   private void connectToDatabase() throws ServletException {
     try {
-      database = DriverManager.getConnection(CONNECTION_URL);
+      database = DriverManager.getConnection(connectionUrl);
     } catch (SQLException error) {
       throw new ServletException(error.getMessage());
     }
   }
 
   private void logInput(HttpServletRequest request, String username, String surname, String authStatus) {
-    try (PrintWriter logWriter = new PrintWriter(new FileWriter(LOG_FILE_PATH, true))) {
+    try (PrintWriter logWriter = new PrintWriter(new FileWriter(logFilePath, true))) {
       LocalDateTime now = LocalDateTime.now();
       DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
       String timestamp = now.format(formatter);
 
       String method = request.getMethod();
       String requestUrl = request.getRequestURL().toString();
-//      String authStatus = authSuccess ? "Authentication Success" : "Authentication Failed";
       logWriter.println(String.format("%s - Method: %s, Request URL: %s, Username: %s, Surname: %s, Status: %s",
               timestamp,
               method,
@@ -449,9 +470,6 @@ public class AppServlet extends HttpServlet {
 
     String authStatus;
 
-    /*
-        check if user is allowed to perform a login action(db query)
-     */
     if (!rateLimiter.isAllowed(username)) {
       authStatus = "Rate Limited";
       logInput(request, username, surname, authStatus);
@@ -470,22 +488,19 @@ public class AppServlet extends HttpServlet {
 
     boolean isValidGp = false;
     try {
-        // check if is valid gp
-        isValidGp = isGpIdMatching(surname, username);
-        if (!isValidGp) {
-            response.sendError(HttpServletResponse.SC_BAD_REQUEST, "You are not responsible for this patient");
-            return;
-        }
+      isValidGp = isGpIdMatching(surname, username);
+      if (!isValidGp) {
+        response.sendError(HttpServletResponse.SC_BAD_REQUEST, "You are not responsible for this patient");
+        return;
+      }
     } catch (SQLException e) {
-        response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Database error during authentication");
+      response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Database error during authentication");
     }
 
-    // reset rate limiter upon successful login
     if (authSuccess) {
       rateLimiter.reset(username);
     }
     authStatus = authSuccess ? "Authentication Success" : "Authentication Failed";
-    // log status
     logInput(request, username, surname, authStatus);
 
     try {
@@ -505,30 +520,27 @@ public class AppServlet extends HttpServlet {
     }
   }
 
-private boolean authenticated(String username, String password) throws SQLException {
-    String query = "SELECT password FROM user WHERE username = ?";
-    try (PreparedStatement pstmt = database.prepareStatement(query)) {
-        pstmt.setString(1, username);
-
-        try (ResultSet results = pstmt.executeQuery()) {
-            if (results.next()) {
-                String storedHashedPassword = results.getString("password");
-
-                String providedHashedPassword = hashPassword(password);
-                return storedHashedPassword.equals(providedHashedPassword);
-            }
-        }
-    }
-    return false;
-}
+  // Method to authenticate a user by comparing provided password with stored hashed password
+  private boolean authenticated(String username, String password) throws SQLException {
+      // Prepare the SQL query to retrieve the stored hashed password for the given username
+      try (PreparedStatement pstmt = database.prepareStatement(queryUserPassword)) {
+          pstmt.setString(1, username); 
+          try (ResultSet results = pstmt.executeQuery()) {
+              if (results.next()) {
+                  // Retrieve the stored hashed password from the database
+                  String storedHashedPassword = results.getString("password");
+                  String providedHashedPassword = hashPassword(password);
+                  return storedHashedPassword.equals(providedHashedPassword);
+              }
+          }
+      }
+      return false;
+  }
 
   private boolean isGpIdMatching(String surname, String username) throws SQLException {
-    String patientQuery = "SELECT gp_id FROM patient WHERE surname = ?";
-    String userQuery = "SELECT id FROM user WHERE username = ?";
-
     try (
-            PreparedStatement patientStmt = database.prepareStatement(patientQuery);
-            PreparedStatement userStmt = database.prepareStatement(userQuery)
+        PreparedStatement patientStmt = database.prepareStatement(queryPatientGpId);
+        PreparedStatement userStmt = database.prepareStatement(queryUserId)
     ) {
       patientStmt.setString(1, surname);
       Integer gpId = null;
@@ -536,7 +548,6 @@ private boolean authenticated(String username, String password) throws SQLExcept
         if (patientResult.next()) {
           gpId = patientResult.getInt("gp_id");
         } else {
-          // suername not found in patient table
           return false;
         }
       }
@@ -547,35 +558,40 @@ private boolean authenticated(String username, String password) throws SQLExcept
         if (userResult.next()) {
           userId = userResult.getInt("id");
         } else {
-          // username not found
           return false;
         }
       }
 
-      // Compare gp_id with user id
       return gpId != null && gpId.equals(userId);
     }
   }
 
-private String hashPassword(String password) {
-    try {
-        MessageDigest digest = MessageDigest.getInstance("SHA-256");
-        byte[] hashedBytes = digest.digest(password.getBytes());
-        StringBuilder sb = new StringBuilder();
-        for (byte b : hashedBytes) {
-            sb.append(String.format("%02x", b));
-        }
-        return sb.toString();
-    } catch (NoSuchAlgorithmException e) {
-        throw new RuntimeException("SHA-256 algorithm not found", e);
-    }
-}
+  // Method to hash the provided password using SHA-256 algorithm
+  private String hashPassword(String password) {
+      try {
+          // Create a MessageDigest instance for the SHA-256 algorithm
+          MessageDigest digest = MessageDigest.getInstance("SHA-256");
+          // Generate the hash by applying the digest function to the password bytes
+          byte[] hashedBytes = digest.digest(password.getBytes());
+          StringBuilder sb = new StringBuilder();
+          for (byte b : hashedBytes) {
+              // Append each byte formatted as two-digit hexadecimal
+              sb.append(String.format("%02x", b));
+          }
+          return sb.toString();
+      } catch (NoSuchAlgorithmException e) {
+          throw new RuntimeException("SHA-256 algorithm not found", e);
+      }
+  }
+
 
 
   private List<Record> searchResults(String surname) throws SQLException {
     List<Record> records = new ArrayList<>();
-    String query = "SELECT * FROM patient WHERE surname = ? COLLATE NOCASE";
+    String query = queryPatientDetails;
+    // Prepare the SQL query using a prepared statement to prevent SQL injection
     try (PreparedStatement pstmt = database.prepareStatement(query)) {
+      // Set the surname parameter in the prepared statement
       pstmt.setString(1, surname);
       try (ResultSet results = pstmt.executeQuery()) {
         while (results.next()) {

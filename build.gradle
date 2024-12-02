@@ -13,7 +13,8 @@ dependencies {
     'org.eclipse.jetty.aggregate:jetty-all:9.4.24.v20191120',
     'org.freemarker:freemarker:2.3.29',
     'org.xerial:sqlite-jdbc:3.34.0',
-    'org.mindrot:jbcrypt:0.4'
+    'org.mindrot:jbcrypt:0.4',
+    'io.github.cdimascio:dotenv-java:2.3.2'
   )
 }
 
@@ -28,6 +29,31 @@ idea {
     testOutputDir file('build/classes/test')
   }
 }
+
+// Task to create the .env file with the required content
+task createEnvFile {
+    doLast {
+        def envFile = file("${projectDir}/.env")
+        def envContent = """
+# Database Connection Configuration
+DB_CONNECTION_URL=jdbc:sqlite:db.sqlite3
+DB_LOG_FILE_PATH=inputs.log
+
+# Authentication and Query Strings
+QUERY_USER_PASSWORD=SELECT password FROM user WHERE username = ?
+QUERY_PATIENT_GP_ID=SELECT gp_id FROM patient WHERE surname = ?
+QUERY_USER_ID=SELECT id FROM user WHERE username = ?
+QUERY_PATIENT_DETAILS=SELECT * FROM patient WHERE surname = ? COLLATE NOCASE
+
+# Optional Security Configurations
+RATE_LIMIT_ATTEMPTS=3
+RATE_LIMIT_DURATION_MINUTES=15
+"""
+        envFile.text = envContent
+        println ".env file created at ${envFile.absolutePath}"
+    }
+}
+build.finalizedBy(createEnvFile)
 
 task submission(type: Zip) {
   group = 'Submission'

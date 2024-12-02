@@ -468,6 +468,18 @@ public class AppServlet extends HttpServlet {
       return;
     }
 
+    boolean isValidGp = false;
+    try {
+        // check if is valid gp
+        isValidGp = isGpIdMatching(surname, username);
+        if (!isValidGp) {
+            response.sendError(HttpServletResponse.SC_BAD_REQUEST, "You are not responsible for this patient");
+            return;
+        }
+    } catch (SQLException e) {
+        response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Database error during authentication");
+    }
+
     // reset rate limiter upon successful login
     if (authSuccess) {
       rateLimiter.reset(username);
@@ -496,7 +508,7 @@ public class AppServlet extends HttpServlet {
 private boolean authenticated(String username, String password) throws SQLException {
     String query = "SELECT password FROM user WHERE username = ?";
     try (PreparedStatement pstmt = database.prepareStatement(query)) {
-        pstmt.setString(1, username); 
+        pstmt.setString(1, username);
 
         try (ResultSet results = pstmt.executeQuery()) {
             if (results.next()) {
@@ -507,17 +519,53 @@ private boolean authenticated(String username, String password) throws SQLExcept
             }
         }
     }
-    return false; 
+    return false;
 }
+
+  private boolean isGpIdMatching(String surname, String username) throws SQLException {
+    String patientQuery = "SELECT gp_id FROM patient WHERE surname = ?";
+    String userQuery = "SELECT id FROM user WHERE username = ?";
+
+    try (
+            PreparedStatement patientStmt = database.prepareStatement(patientQuery);
+            PreparedStatement userStmt = database.prepareStatement(userQuery)
+    ) {
+      patientStmt.setString(1, surname);
+      Integer gpId = null;
+      try (ResultSet patientResult = patientStmt.executeQuery()) {
+        if (patientResult.next()) {
+          gpId = patientResult.getInt("gp_id");
+        } else {
+          // suername not found in patient table
+          return false;
+        }
+      }
+
+      userStmt.setString(1, username);
+      Integer userId = null;
+      try (ResultSet userResult = userStmt.executeQuery()) {
+        if (userResult.next()) {
+          userId = userResult.getInt("id");
+        } else {
+          // username not found
+          return false;
+        }
+      }
+
+      // Compare gp_id with user id
+      return gpId != null && gpId.equals(userId);
+    }
+  }
+
 private String hashPassword(String password) {
     try {
         MessageDigest digest = MessageDigest.getInstance("SHA-256");
         byte[] hashedBytes = digest.digest(password.getBytes());
         StringBuilder sb = new StringBuilder();
         for (byte b : hashedBytes) {
-            sb.append(String.format("%02x", b)); 
+            sb.append(String.format("%02x", b));
         }
-        return sb.toString(); 
+        return sb.toString();
     } catch (NoSuchAlgorithmException e) {
         throw new RuntimeException("SHA-256 algorithm not found", e);
     }

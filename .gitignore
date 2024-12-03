@@ -32,6 +32,3 @@ desktop.ini
 *.tmp
 *.bak
 *.swp
-
-# Dependency directories
-node_modules/

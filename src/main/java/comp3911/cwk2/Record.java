@@ -1,5 +1,6 @@
 package comp3911.cwk2;
 
+// Represents a record with patient details and associated metadata of the patient
 public class Record {
   private String surname;
   private String forename;

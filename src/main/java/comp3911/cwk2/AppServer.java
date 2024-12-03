@@ -41,7 +41,7 @@ public class AppServer {
 
         // Set up an SSL connector
         ServerConnector sslConnector = new ServerConnector(server, new SslConnectionFactory(sslContextFactory, "http/1.1"), new HttpConnectionFactory());
-        sslConnector.setPort(8443); // SSL port
+        sslConnector.setPort(8080); // SSL port
         server.addConnector(sslConnector);
 
         // Set up the servlet handler

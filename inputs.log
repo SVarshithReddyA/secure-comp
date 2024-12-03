@@ -21,3 +21,4 @@
 2024-12-03 14:35:26 - Method: POST, Request URL: http://localhost:8080/, Username: mjones, Surname: Scott, Status: Authentication Failed (Unauthorized user)
 2024-12-03 18:38:51 - Method: POST, Request URL: http://localhost:8080/, Username: mjones, Surname: Davison, Status: Authentication Success
 2024-12-03 18:41:29 - Method: POST, Request URL: http://localhost:8080/, Username: mjones, Surname: Davison, Status: Authentication Success
+2024-12-03 21:19:31 - Method: POST, Request URL: http://localhost:8443/, Username: mjones, Surname: Davison, Status: Authentication Success

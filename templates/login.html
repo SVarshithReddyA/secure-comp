@@ -1,82 +1,138 @@
 <!doctype html>
 <html lang="en">
-  <head>
-    <meta charset="utf-8">
-    <!-- Implement Content Security Policy on this page only, as it is the only page with user input. -->
-    <!-- <meta http-equiv="Content-Security-Policy" name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no"> -->
-    <meta http-equiv="Content-Security-Policy" content="default-src 'self';">
-    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
-    <title>Patient Records System</title>
-  </head>
-  <body>
-    <div class="container">
-      <h1 class="mt-2 mb-4">Patient Records System</h1>
 
-      <!-- Highlighted: Added 'onsubmit' attribute to perform client-side sanitization -->
-      <form action="" method="POST" onsubmit="return sanitizeInput();">
-        <div class="row">
-          <div class="col-4">
-            <div class="form-group">
-              <label for="uid">Your User ID</label>
-              <!-- Input field for User ID with basic alphanumeric validation -->
-              <input id="uid" type="text" class="form-control" name="username" pattern="[a-zA-Z0-9]{1,20}" required>
-            </div>
+<head>
+  <meta charset="utf-8">
+  <!-- Implement Content Security Policy on this page only, as it is the only page with user input. -->
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; object-src 'none'; style-src 'self' 'unsafe-inline' https://maxcdn.bootstrapcdn.com;">
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css"
+    integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+  <title>Patient Records System</title>
+</head>
+
+<body>
+  <div class="container">
+    <h1 class="mt-2 mb-4">Patient Records System</h1>
+
+    <!-- Highlighted: Added 'onsubmit' attribute to perform client-side sanitization -->
+    <form action="" method="POST" onsubmit="return sanitizeInput();">
+      <div class="row">
+        <div class="col-4">
+          <div class="form-group">
+            <label for="uid">Your User ID</label>
+            <!-- Input field for User ID with basic alphanumeric validation -->
+            <input id="uid" type="text" class="form-control" name="username" pattern="[a-zA-Z0-9]{1,20}" required>
           </div>
         </div>
-        <div class="row">
-          <div class="col-4">
-            <div class="form-group">
-              <label for="pwd">Your Password</label>
-              <!-- Input field for Password with minimum length validation -->
-              <input id="pwd" type="password" class="form-control" name="password" pattern=".{6,}" required>
-            </div>
+      </div>
+      <div class="row">
+        <div class="col-4">
+          <div class="form-group">
+            <label for="pwd">Your Password</label>
+            <!-- Input field for Password with minimum length validation -->
+            <input id="pwd" type="password" class="form-control" name="password" pattern=".{6,}" required>
           </div>
         </div>
-        <div class="row">
-          <div class="col-4">
-            <div class="form-group">
-              <label for="sn">Patient Surname</label>
-              <!-- Input field for Patient Surname allowing only alphabetic characters -->
-              <input id="sn" type="text" class="form-control" name="surname" pattern="[a-zA-Z]{1,50}" required>
-           </div>
+      </div>
+      <div class="row">
+        <div class="col-4">
+          <div class="form-group">
+            <label for="sn">Patient Surname</label>
+            <!-- Input field for Patient Surname allowing only alphabetic characters -->
+            <input id="sn" type="text" class="form-control" name="surname" pattern="[a-zA-Z]{1,50}" required>
           </div>
         </div>
-        <button type="submit" class="mt-2 btn btn-primary">Search</button>
-      </form>
-    </div>
+      </div>
+      <button type="submit" class="mt-2 btn btn-primary">Search</button>
+    </form>
+  </div>
 
-    <!-- JavaScript for client-side sanitization -->
-    <script>
-      function sanitizeInput() {
-        // Get input values from the form fields
-        const username = document.getElementById('uid').value.trim();
-        const password = document.getElementById('pwd').value.trim();
-        const surname = document.getElementById('sn').value.trim();
+  <!-- JavaScript for client-side sanitization -->
 
-        // Perform basic sanitization by removing potentially harmful characters
-        const sanitizedUsername = username.replace(/[^a-zA-Z0-9]/g, '');
-        const sanitizedSurname = surname.replace(/[^a-zA-Z]/g, '');
+  <script>
+    function sanitizeInput() {
+      // Get input values from the form fields
+      const username = document.getElementById('uid').value.trim();
+      const password = document.getElementById('pwd').value.trim();
+      const surname = document.getElementById('sn').value.trim();
 
-        // Alert user if sanitization changes the input
-        if (username !== sanitizedUsername) {
-          alert("User ID contains invalid characters. Please use only alphanumeric characters.");
-          return false;
-        }
-        if (surname !== sanitizedSurname) {
-          alert("Surname contains invalid characters. Please use only letters.");
-          return false;
-        }
-        if (password.length < 6) {
-          alert("Password must be at least 8 characters long.");
-          return false;
-        }
-        return true; // Allow form submission if all checks pass
+      // Perform basic sanitization by removing potentially harmful characters
+      const sanitizedUsername = username.replace(/[^a-zA-Z0-9]/g, '');
+      const sanitizedSurname = surname.replace(/[^a-zA-Z]/g, '');
+
+      // Escape potentially dangerous characters for XSS protection
+      const escapeHTML = (str) => {
+        return str.replace(/[&<>"']/g, (char) => {
+          const map = {
+            '&': '&amp;',
+            '<': '&lt;',
+            '>': '&gt;',
+            '"': '&quot;',
+            "'": '&#39;'
+          };
+          return map[char];
+        });
+      };
+
+      const escapedUsername = escapeHTML(sanitizedUsername);
+      const escapedSurname = escapeHTML(sanitizedSurname);
+
+      // Alert user if sanitization changes the input
+      if (username !== sanitizedUsername) {
+        alert("User ID contains invalid characters. Please use only alphanumeric characters.");
+        return false;
       }
-    </script>
+      if (surname !== sanitizedSurname) {
+        alert("Surname contains invalid characters. Please use only letters.");
+        return false;
+      }
+      if (password.length < 6) {
+        alert("Password must be at least 6 characters long.");
+        return false;
+      }
 
-    <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
-    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
-  </body>
+      // Optionally, assign escaped values back to the form fields to prevent XSS
+      document.getElementById('uid').value = escapedUsername;
+      document.getElementById('sn').value = escapedSurname;
+
+      return true; // Allow form submission if all checks pass
+    }
+
+    // Get input values from the form fields
+    const username = document.getElementById('uid').value.trim();
+    const password = document.getElementById('pwd').value.trim();
+    const surname = document.getElementById('sn').value.trim();
+
+    // Perform basic sanitization by removing potentially harmful characters
+    const sanitizedUsername = username.replace(/[^a-zA-Z0-9]/g, '');
+    const sanitizedSurname = surname.replace(/[^a-zA-Z]/g, '');
+
+    // Alert user if sanitization changes the input
+    if (username !== sanitizedUsername) {
+      alert("User ID contains invalid characters. Please use only alphanumeric characters.");
+      return false;
+    }
+    if (surname !== sanitizedSurname) {
+      alert("Surname contains invalid characters. Please use only letters.");
+      return false;
+    }
+    if (password.length < 6) {
+      alert("Password must be at least 8 characters long.");
+      return false;
+    }
+    return true; // Allow form submission if all checks pass
+  </script>
+
+  <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js"
+    integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN"
+    crossorigin="anonymous"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js"
+    integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q"
+    crossorigin="anonymous"></script>
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js"
+    integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl"
+    crossorigin="anonymous"></script>
+</body>
+
 </html>

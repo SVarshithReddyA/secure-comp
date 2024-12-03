@@ -9,14 +9,18 @@ repositories {
 }
 
 dependencies {
-  implementation (
-    'org.eclipse.jetty.aggregate:jetty-all:9.4.24.v20191120',
-    'org.freemarker:freemarker:2.3.29',
-    'org.xerial:sqlite-jdbc:3.34.0',
-    'org.mindrot:jbcrypt:0.4',
-    'io.github.cdimascio:dotenv-java:2.3.2'
-  )
+    implementation(
+        'org.eclipse.jetty.aggregate:jetty-all:9.4.24.v20191120', 
+        'org.eclipse.jetty:jetty-server:9.4.24.v20191120', 
+        'org.eclipse.jetty:jetty-util:9.4.24.v20191120', 
+        'org.eclipse.jetty:jetty-http:9.4.24.v20191120',       
+        'org.freemarker:freemarker:2.3.29',
+        'org.xerial:sqlite-jdbc:3.34.0',
+        'org.mindrot:jbcrypt:0.4',
+        'io.github.cdimascio:dotenv-java:2.3.2'
+    )
 }
+
 
 application {
   mainClass = 'comp3911.cwk2.AppServer'
@@ -47,6 +51,9 @@ QUERY_PATIENT_DETAILS=SELECT * FROM patient WHERE surname = ? COLLATE NOCASE
 # Optional Security Configurations
 RATE_LIMIT_ATTEMPTS=3
 RATE_LIMIT_DURATION_MINUTES=15
+
+# Set the default password (sc21svra)
+DEFAULT_PASSWORD=sc21svra
 """
         envFile.text = envContent
         println ".env file created at ${envFile.absolutePath}"

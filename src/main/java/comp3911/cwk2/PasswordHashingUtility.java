@@ -21,6 +21,7 @@ public class PasswordHashingUtility {
         }
     }
 
+// Updates all plaintext passwords in the database to hashed passwords
 public static void updatePasswordsToHashed(Connection database) {
     try {
         // Start a transaction
@@ -32,7 +33,7 @@ public static void updatePasswordsToHashed(Connection database) {
             while (rs.next()) {
                 String username = rs.getString("username");
                 String plainPassword = rs.getString("password");
-                String hashedPassword = hashPassword(plainPassword);
+                String hashedPassword = hashPassword(plainPassword); // Hashes plain text password
 
                 String updateQuery = "UPDATE user SET password = ? WHERE username = ?";
                 try (PreparedStatement updateStmt = database.prepareStatement(updateQuery)) {
@@ -47,21 +48,17 @@ public static void updatePasswordsToHashed(Connection database) {
 
     } catch (SQLException e) {
         System.err.println("Error updating passwords: " + e.getMessage());
-        
-        // try {
-        //     database.rollback(); 
-        //     System.out.println("Changes have been rolled back.");
-        // } catch (SQLException rollbackEx) {
-        //     System.err.println("Error during rollback: " + rollbackEx.getMessage());
-        // }
     }
 }
 
-
+    // Hashes a plaintext password using the SHA-256 algorithm.
     private static String hashPassword(String password) {
         try {
+            // Create a MessageDigest instance for SHA-256
             MessageDigest digest = MessageDigest.getInstance("SHA-256");
+            // Generates hash from password bytes
             byte[] hashedBytes = digest.digest(password.getBytes());
+            // Converted hashed bytes into hexadecimal string
             StringBuilder sb = new StringBuilder();
             for (byte b : hashedBytes) {
                 sb.append(String.format("%02x", b));
